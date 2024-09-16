@@ -2,6 +2,7 @@
 Mandatory assignment for OS
 
 Task 1: code explanation.
+
 read_char:
 This function uses the read system call to read a single character from stdin (file descriptor 0).
 If the read system call successfully reads 1 character, it returns that character. If no characters are available or there is an error, it returns EOF.
