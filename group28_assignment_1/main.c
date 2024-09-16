@@ -34,5 +34,30 @@ main()
    *    as a comma delimited series of integers
    *-----------------------------------------------------------------*/
 
+  while (read_char != NULL)
+  {
+    int collection[10];
+    int counter = 0;
+
+    if (read_char = 'a')
+    {
+      counter++
+    } if (read_char = 'b')
+    {
+      counter++
+    } if (read_char = 'c')
+    {
+      counter++
+    } else
+    {
+      printf("Invalid input!\nValid inputs are a, b and c.\n");
+      break;
+    }
+    
+    
+
+  }
+  
+
   return 0;
 }
