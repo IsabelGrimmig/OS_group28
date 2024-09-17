@@ -12,9 +12,7 @@
  * Then it has a place for you to implementation the command 
  * interpreter as  specified in the handout.
  */
-int
-main()
-{
+int main(){
   /*-----------------------------------------------------------------
    *TODO:  You need to implement the command line driver here as
    *       specified in the assignment handout.
@@ -52,19 +50,20 @@ main()
     }
 
     // Loop to read and process commands
-    while (1) {
+    while (TRUE) {
         command = read_char();  // Read a command using read_char()
 
         // Check if the command is valid ('a', 'b', 'c'). If not, break the loop.
-        if (command != 'a' && command != 'b' && command != 'c') {
+        //if (command != 'a' && command != 'b' && command != 'c') {
+        if (command != 'a' | 'b' | 'c'){
             break;
         }
 
         // Process commands
-        if (command = 'a'){
+        if (command == 'a'){
             collection[collectionSpace] = counter;
             collectionSpace++;
-        } if (command = 'c'){
+        } if (command == 'c'){
             collection[collectionSpace] = 0;
             collectionSpace--;
         }
@@ -75,11 +74,11 @@ main()
     // Print the collection as a comma-delimited series of integers
     for (int i = 0; i < counter; i++) {
         if (i != 0) {
-            write_char(",");  // Print a comma before each element except the first
+            write_string(",");  // Print a comma before each element except the first
         }
-        write_string("%d", collection[i]);
+        write_int(collection[i]);
     }
-    write_char(";");
+    write_string(";");
     write_string("\n");  // Print a newline after the collection
 
     return 0;
