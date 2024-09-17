@@ -35,6 +35,7 @@ main()
    *-----------------------------------------------------------------*/
 
   #define NULL 0
+  #define TRUE 1
 
 
     // Declare structure
@@ -52,7 +53,7 @@ main()
     }
 
     // Loop to read and process commands
-    while (1) {
+    while (TRUE) {
         command = read_char();  // Read a command using read_char()
 
         // Check if the command is valid ('a', 'b' or 'c'). If not, break the loop.
