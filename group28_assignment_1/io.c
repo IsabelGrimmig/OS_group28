@@ -62,7 +62,7 @@ int write_int(int n) {
     //Reverse the digits in the buffer (simple string reversal)
             for (int i = start; i < length - 1; ++i) {
                 char temp = buffer[i];
-                buffer[i] = bummer [length - 1];
+                buffer[i] = buffer [length - 1];
                 buffer[length - 1] = temp;
                 length--;
             }

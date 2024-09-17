@@ -36,6 +36,7 @@ main()
 
   #define NULL 0
   #define TRUE 1
+  #define MAX_ELEMENTS
 
 
     // Declare structure
@@ -44,6 +45,7 @@ main()
     int capacity = 10;         // Initial capacity of the collection
     int command;               // Variable to store the command read from read_char()
     int collectionSpace = 0;   // Counter to keep track of the number of elements
+
 
     // Allocate memory for the collection
     collection = (int *)malloc(capacity * sizeof(int));
