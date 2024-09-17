@@ -37,12 +37,12 @@ main()
   #define NULL 0
 
 
-    // Declare variables
+    // Declare structure
     int *collection = NULL;    // Pointer to store the collection dynamically
     int counter = 0;           // Counter to keep track of the incrementation
     int capacity = 10;         // Initial capacity of the collection
     int command;               // Variable to store the command read from read_char()
-    int collectionSpace = 0;    // counter to keep track of the number of elements
+    int collectionSpace = 0;   // Counter to keep track of the number of elements
 
     // Allocate memory for the collection
     collection = (int *)malloc(capacity * sizeof(int));
@@ -55,7 +55,7 @@ main()
     while (1) {
         command = read_char();  // Read a command using read_char()
 
-        // Check if the command is valid ('a', 'b', 'c'). If not, break the loop.
+        // Check if the command is valid ('a', 'b' or 'c'). If not, break the loop.
         if (command != 'a' | 'b' | 'c') {
             break;
         }
@@ -76,12 +76,12 @@ main()
                 collection[collectionSpace++] = counter;  // Add the current count to the collection
                 break;
 
-            case 'b':                                     // Do nothing except incrementing count
+            case 'b':                                     // Do nothing
                 break;
 
             case 'c':
                 collection[collectionSpace] = 0;          // Remove the latest added value from the collection
-                collectionSpace--;
+                collectionSpace--;                        // Jump one space back in the array
                 break;
         }
         counter++;                                        // Increment counter
@@ -92,7 +92,7 @@ main()
     for (int i = 0; i < collectionSpace; i++) {
         sum = sum + collection[i];
     }
-    printf(sum);  
+    printf(sum);  //Print the summed collection
     print ("\n"); // Print a newline after the sum of collection
 
     // Free the allocated memory
