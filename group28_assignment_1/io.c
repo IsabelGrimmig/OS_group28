@@ -68,7 +68,7 @@ int write_int(int n) {
             }
             
         }
-        buffer[length] = '/0';              // Null-terminate the string
+        buffer[length] = '\0';              // Null-terminate the string
         return write_string(buffer);        // Use write_string to write it to stdout
   
 }
