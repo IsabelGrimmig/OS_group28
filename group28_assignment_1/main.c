@@ -44,6 +44,7 @@ main()
     int capacity = 10;         // Initial capacity of the collection
     int command;               // Variable to store the command read from read_char()
     int collectionSpace = 0;   // Counter to keep track of the number of elements
+    int sum = 0;               // Variable for sum
 
     // Allocate memory for the collection
     collection = (int *)malloc(capacity * sizeof(int));
@@ -82,14 +83,19 @@ main()
 
             case 'c':
                 collection[collectionSpace] = 0;          // Remove the latest added value from the collection
-                collectionSpace--;                        // Jump one space back in the array
-                break;
+                if (collectionSpace == 0)
+                {
+                 break;
+                } else
+                {
+                    collectionSpace--;                        // Jump one space back in the array
+                    break;
+                }
         }
         counter++;                                        // Increment counter
     }
 
     // Sum the collection
-    int sum = 0;
     for (int i = 0; i < collectionSpace; i++) {
         sum = sum + collection[i];
     }
