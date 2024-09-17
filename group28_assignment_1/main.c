@@ -44,7 +44,6 @@ main()
     int capacity = 10;         // Initial capacity of the collection
     int command;               // Variable to store the command read from read_char()
     int collectionSpace = 0;   // Counter to keep track of the number of elements
-    int sum = 0;               // Variable for sum
 
     // Allocate memory for the collection
     collection = (int *)malloc(capacity * sizeof(int));
@@ -95,12 +94,14 @@ main()
         counter++;                                        // Increment counter
     }
 
-    // Sum the collection
-    for (int i = 0; i < collectionSpace; i++) {
-        sum = sum + collection[i];
+    // Print the collection as a comma-delimited series of integers
+    for (int i = 0; i < counter; i++) {
+        if (i != 0) {
+            printf(",");  // Print a comma before each element except the first
+        }
+        printf("%d", collection[i]);
     }
-    printf(sum);  //Print the summed collection
-    print ("\n"); // Print a newline after the sum of collection
+    printf(";\n");  // Print a newline after the collection
 
     // Free the allocated memory
     free(collection);
