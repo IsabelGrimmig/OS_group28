@@ -74,19 +74,17 @@ main()
         switch (command) {
             case 'a':
                 collection[collectionSpace++] = counter;  // Add the current count to the collection
-                counter++;                                // increment the counter
                 break;
 
-            case 'b':                                     //Do nothing except incrementing count
-                counter++;
+            case 'b':                                     // Do nothing except incrementing count
                 break;
 
             case 'c':
-                collection[collectionSpace] = 0;          //Remove the latest added value from the collection
-                counter++;
+                collection[collectionSpace] = 0;          // Remove the latest added value from the collection
                 collectionSpace--;
                 break;
         }
+        counter++;                                        // Increment counter
     }
 
     // Sum the collection
