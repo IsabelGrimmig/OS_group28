@@ -1,7 +1,7 @@
 
-//#include <errno.h>
-//#include <unistd.h>
-//#include <string.h>
+#include <errno.h>
+#include <unistd.h>
+#include <string.h>
 #include "io.h"
 
 /* Reads next char from stdin. If no more characters, it returns EOF */
