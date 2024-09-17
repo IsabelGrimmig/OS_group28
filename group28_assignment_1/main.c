@@ -36,77 +36,51 @@ main()
 
   #define NULL 0
   #define TRUE 1
-  #define MAX_ELEMENTS
+  #define MAX_ELEMENTS 300
 
 
     // Declare structure
-    int *collection = NULL;    // Pointer to store the collection dynamically
+    int collection[MAX_ELEMENTS];  // Array to store collection of elements
     int counter = 0;           // Counter to keep track of the incrementation
-    int capacity = 10;         // Initial capacity of the collection
     int command;               // Variable to store the command read from read_char()
     int collectionSpace = 0;   // Counter to keep track of the number of elements
 
 
-    // Allocate memory for the collection
-    collection = (int *)malloc(capacity * sizeof(int));
-    if (collection == NULL) {
-        printf("Memory allocation failed\n");
-        return 1;  // Exit if memory allocation fails
+    // Initialize the collection to all zeros (optional, depending on the use case)
+    for (int i = 0; i < MAX_ELEMENTS; i++) {
+        collection[i] = 0;
     }
 
     // Loop to read and process commands
-    while (TRUE) {
+    while (1) {
         command = read_char();  // Read a command using read_char()
 
-        // Check if the command is valid ('a', 'b' or 'c'). If not, break the loop.
-        if (command != 'a' | 'b' | 'c') {
+        // Check if the command is valid ('a', 'b', 'c'). If not, break the loop.
+        if (command != 'a' && command != 'b' && command != 'c') {
             break;
         }
 
-        // If the collection is full, double its capacity
-        if (collectionSpace >= capacity) {
-            capacity *= 2;
-            collection = (int *)realloc(collection, capacity * sizeof(int));
-            if (collection == NULL) {
-                printf("Memory reallocation failed\n");
-                return 1;  // Exit if memory reallocation fails
-            }
-        }
-
         // Process commands
-        switch (command) {
-            case 'a':
-                collection[collectionSpace++] = counter;  // Add the current count to the collection
-                break;
-
-            case 'b':                                     // Do nothing
-                break;
-
-            case 'c':
-                collection[collectionSpace] = 0;          // Remove the latest added value from the collection
-                if (collectionSpace == 0)
-                {
-                 break;
-                } else
-                {
-                    collectionSpace--;                        // Jump one space back in the array
-                    break;
-                }
+        if (command = 'a'){
+            collection[collectionSpace] = counter;
+            collectionSpace++;
+        } if (command = 'c'){
+            collection[collectionSpace] = 0;
+            collectionSpace--;
         }
-        counter++;                                        // Increment counter
+        counter++;
+        
     }
 
     // Print the collection as a comma-delimited series of integers
     for (int i = 0; i < counter; i++) {
         if (i != 0) {
-            printf(",");  // Print a comma before each element except the first
+            write_char(",");  // Print a comma before each element except the first
         }
-        printf("%d", collection[i]);
+        write_string("%d", collection[i]);
     }
-    printf(";\n");  // Print a newline after the collection
+    write_char(";");
+    write_string("\n");  // Print a newline after the collection
 
-    // Free the allocated memory
-    free(collection);
-
-  return 0;
+    return 0;
 }
