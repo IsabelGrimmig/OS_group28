@@ -34,18 +34,22 @@ main()
    *    as a comma delimited series of integers
    *-----------------------------------------------------------------*/
 
-  #define MAX_ELEMENTS 100  // Define max number of elements in the collection
+  #define NULL 0
 
 
     // Declare variables
-    int collection[MAX_ELEMENTS];  // Array to store collection of elements
-    int counter = 0;               // Counter to keep track of the number of elements
-    int command;                   // Variable to store the command read from read_char()
-    
-    // Initialize the collection to all zeros (optional, depending on the use case)
-    /*for (int i = 0; i < MAX_ELEMENTS; i++) {
-        collection[i] = 0;
-    }*/
+    int *collection = NULL;    // Pointer to store the collection dynamically
+    int counter = 0;           // Counter to keep track of the incrementation
+    int capacity = 10;         // Initial capacity of the collection
+    int command;               // Variable to store the command read from read_char()
+    int collectionSpace = 0;    // counter to keep track of the number of elements
+
+    // Allocate memory for the collection
+    collection = (int *)malloc(capacity * sizeof(int));
+    if (collection == NULL) {
+        printf("Memory allocation failed\n");
+        return 1;  // Exit if memory allocation fails
+    }
 
     // Loop to read and process commands
     while (1) {
@@ -56,46 +60,45 @@ main()
             break;
         }
 
+        // If the collection is full, double its capacity
+        if (collectionSpace >= capacity) {
+            capacity *= 2;
+            collection = (int *)realloc(collection, capacity * sizeof(int));
+            if (collection == NULL) {
+                printf("Memory reallocation failed\n");
+                return 1;  // Exit if memory reallocation fails
+            }
+        }
+
         // Process commands
         switch (command) {
             case 'a':
-                // Add an element to the collection
-                if (counter < MAX_ELEMENTS) {
-                    collection[counter++] = 1;  // Add a 1 to the collection (adjust as per the spec)
-                } else {
-                    printf("Collection is full!\n");
-                    break;
-                }
+                collection[collectionSpace++] = counter;  // Add the current count to the collection
+                counter++;                                // increment the counter
+                break;
 
-            case 'b':
-                // Add a different element to the collection
-                if (counter < MAX_ELEMENTS) {
-                    collection[counter++] = 2;  // Add a 2 to the collection (adjust as per the spec)
-                } else {
-                    printf("Collection is full!\n");
-                    break;
-                }
+            case 'b':                                     //Do nothing except incrementing count
+                counter++;
+                break;
 
             case 'c':
-                // Add another type of element to the collection
-                if (counter < MAX_ELEMENTS) {
-                    collection[counter++] = 3;  // Add a 3 to the collection (adjust as per the spec)
-                } else {
-                    printf("Collection is full!\n");
-                    break;
-                }
+                collection[collectionSpace] = 0;          //Remove the latest added value from the collection
+                counter++;
+                collectionSpace--;
+                break;
         }
     }
 
-    // Print the collection as a comma-delimited series of integers
-    for (int i = 0; i < counter; i++) {
-        if (i != 0) {
-            printf(",");  // Print a comma before each element except the first
-        }
-        printf("%d", collection[i]);
+    // Sum the collection
+    int sum = 0;
+    for (int i = 0; i < collectionSpace; i++) {
+        sum = sum + collection[i];
     }
-    printf("\n");  // Print a newline after the collection
-  
+    printf(sum);  
+    print ("\n"); // Print a newline after the sum of collection
+
+    // Free the allocated memory
+    free(collection);
 
   return 0;
 }
