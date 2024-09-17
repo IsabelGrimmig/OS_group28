@@ -54,8 +54,8 @@ int main(){
         command = read_char();  // Read a command using read_char()
 
         // Check if the command is valid ('a', 'b', 'c'). If not, break the loop.
-        //if (command != 'a' && command != 'b' && command != 'c') {
-        if (command != 'a' | 'b' | 'c'){
+        if (command != 'a' && command != 'b' && command != 'c') {
+        //if (command != 'a' | 'b' | 'c'){
             break;
         }
 
