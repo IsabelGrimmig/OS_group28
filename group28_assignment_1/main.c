@@ -64,8 +64,11 @@ int main(){
             collection[collectionSpace] = counter;
             collectionSpace++;
         } if (command == 'c'){
-            collection[collectionSpace] = 0;
-            collectionSpace--;
+            if (collectionSpace != 0)
+            {
+                collectionSpace--;
+                collection[collectionSpace] = 0;
+            }
         }
         counter++;
         
