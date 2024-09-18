@@ -83,10 +83,6 @@ int main(){
         {
             write_int(collection[i]);
         }
-        
-        
-        
-        
     }
     write_string(";");
     write_string("\n");  // Print a newline after the collection
