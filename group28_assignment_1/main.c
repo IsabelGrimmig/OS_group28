@@ -67,8 +67,8 @@ int main(){
             if (collectionSpace != 0)
             {
                 collectionSpace--;
-                collection[collectionSpace] = 0;
             }
+            collection[collectionSpace] = 0;
         }
         counter++;
         
