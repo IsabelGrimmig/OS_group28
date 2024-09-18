@@ -69,6 +69,7 @@ int main(){
                 collectionSpace--;
             }
             collection[collectionSpace] = 0;
+            }
         }
         counter++;
         
