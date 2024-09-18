@@ -69,10 +69,8 @@ int main(){
                 collectionSpace--;
             }
             collection[collectionSpace] = 0;
-            }
         }
         counter++;
-        
     }
 
     // Print the collection as a comma-delimited series of integers
