@@ -64,19 +64,27 @@ int main(){
             collection[collectionSpace] = counter;
             collectionSpace++;
         } if (command == 'c'){
+            if (collectionSpace != 0)
+            {
+                collectionSpace--;
+            }
             collection[collectionSpace] = 0;
-            collectionSpace--;
         }
         counter++;
-        
     }
 
     // Print the collection as a comma-delimited series of integers
     for (int i = 0; i < counter; i++) {
-        if (i != 0) {
+        if (i != 0 && collection[i] != 0) {
             write_string(",");  // Print a comma before each element except the first
         }
-        write_int(collection[i]);
+        if (i != 0 && collection[i] == 0)
+        {
+        
+        }else
+        {
+            write_int(collection[i]);
+        }
     }
     write_string(";");
     write_string("\n");  // Print a newline after the collection
