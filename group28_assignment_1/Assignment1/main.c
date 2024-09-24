@@ -1,6 +1,7 @@
 
 /* You are not allowed to use <stdio.h> */
 #include "io.h"
+#include "stdlib.h"
 
 
 /**
@@ -32,31 +33,43 @@ int main(){
    *    as a comma delimited series of integers
    *-----------------------------------------------------------------*/
 
-  #define NULL 0
+  //#define NULL 0
   #define TRUE 1
-  #define MAX_ELEMENTS 300
+  //#define MAX_ELEMENTS
 
 
     // Declare structure
-    int collection[MAX_ELEMENTS];  // Array to store collection of elements
+    int *collection = NULL;  // Array to store collection of elements
     int counter = 0;           // Counter to keep track of the incrementation
+    int capacity = 10;
     int command;               // Variable to store the command read from read_char()
     int collectionSpace = 0;   // Counter to keep track of the number of elements
 
-
-    // Initialize the collection to all zeros (optional, depending on the use case)
-    for (int i = 0; i < MAX_ELEMENTS; i++) {
-        collection[i] = 0;
-    }
+    // Allocate memory for the collection
+    collection = (int *)malloc(capacity * sizeof(int));
+    if (collection == NULL) {
+        printf("Memory allocation failed\n");
+        return 1;  // Exit if memory allocation fails
 
     // Loop to read and process commands
     while (TRUE) {
         command = read_char();  // Read a command using read_char()
 
         // Check if the command is valid ('a', 'b', 'c'). If not, break the loop.
-        if (command != 'a' && command != 'b' && command != 'c') {
-        //if (command != 'a' | 'b' | 'c'){
+        //if (command != 'a' && command != 'b' && command != 'c') {
+        if (command != 'a' || 'b' || 'c'){
             break;
+        }
+
+
+        // If the collection is full, double its capacity
+        if (collectionSpace >= capacity) {
+            capacity *= 2;
+            collection = (int *)realloc(collection, capacity * sizeof(int));
+            if (collection == NULL) {
+                printf("Memory reallocation failed\n");
+                return 1;  // Exit if memory reallocation fails
+            }
         }
 
         // Process commands
@@ -68,7 +81,7 @@ int main(){
             {
                 collectionSpace--;
             }
-            collection[collectionSpace] = 0;
+            collection[collectionSpace] = NULL;
         }
         counter++;
     }
@@ -86,8 +99,10 @@ int main(){
             write_int(collection[i]);
         }
     }
+    free(collection);
     write_string(";");
     write_string("\n");  // Print a newline after the collection
 
     return 0;
+    }
 }
