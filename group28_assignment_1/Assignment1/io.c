@@ -56,12 +56,14 @@ int write_int(int n) {
         buffer[index++] = '-'
         n = -n
 
+    //keeping track of first digit in case of negative integer
     int first_digit = index
 
     while (n > 0):
         buffer[index++] = (char) (n%10)
         n /= 10
 
+    //keep track of where the last digit is, for adding a null-terminator later
     int last_digit = index
 
 //reverse the list, without the start
