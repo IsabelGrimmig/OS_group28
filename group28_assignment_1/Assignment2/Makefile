@@ -22,7 +22,7 @@ all: $(APP_EXECUTABLE) $(TEST_EXECUTABLE)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TEST_EXECUTABLE): $(TEST_OBJECTS)
-	$(CC) $(CFLAGS) $(TEST_OBJECTS) -o $@ -lcheck -lsubunit -lm
+	$(CC) $(CFLAGS) $(TEST_OBJECTS) -o $@ -lcheck -lm
 
 $(APP_EXECUTABLE): $(APP_OBJECTS)
 	$(CC) $(CFLAGS) $(APP_OBJECTS) -o $@

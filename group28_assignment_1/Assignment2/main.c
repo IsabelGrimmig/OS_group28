@@ -85,7 +85,7 @@ int main(){
             {
                 collectionSpace--;
             }
-            collection[collectionSpace] = NULL;
+collection[collectionSpace] = 0;
         }
         //write_int(counter);
         //write_string("\n");
