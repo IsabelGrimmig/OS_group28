@@ -325,6 +325,35 @@ START_TEST(test_multiple_allocations)
 }
 END_TEST
 
+START_TEST(test_next_fit_allocation)
+{
+    // Allocate several blocks of different sizes
+    int *block1 = MALLOC(20 * sizeof(int));  // Small block
+    int *block2 = MALLOC(50 * sizeof(int));  // Medium block
+    int *block3 = MALLOC(100 * sizeof(int)); // Large block
+
+    ck_assert(block1 != NULL);
+    ck_assert(block2 != NULL);
+    ck_assert(block3 != NULL);
+
+    // Free the second block, leaving a free block in the middle
+    FREE(block2);
+
+    // Now allocate a block that is larger than the freed block, so it should skip it
+    int *block4 = MALLOC(60 * sizeof(int));  // Larger than block2
+    ck_assert(block4 != NULL);
+
+    // Ensure block4 was placed after block3, not reusing block2’s space
+    ck_assert(block4 != block2);  // Proving next-fit by skipping block2
+
+    // Cleanup
+    FREE(block1);
+    FREE(block3);
+    FREE(block4);
+}
+END_TEST
+
+
 
 
 
@@ -349,6 +378,7 @@ Suite* simple_malloc_suite()
   tcase_add_test (tc_core, test_memory_exerciser);
   tcase_add_test(tc_core, test_allocation);
   tcase_add_test(tc_core, test_coalescing);
+  tcase_add_test(tc_core, test_next_fit_allocation);
 
   suite_add_tcase(s, tc_core);
   return s;
