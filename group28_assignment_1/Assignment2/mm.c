@@ -39,17 +39,25 @@ static BlockHeader * current = NULL;
  *
  */
 void simple_init() {
-  uintptr_t aligned_memory_start = memory_start;  /* TODO: Alignment */
-  uintptr_t aligned_memory_end   = memory_end;    /* TODO: Alignment */
-  BlockHeader * last;
+  uintptr_t aligned_memory_start = (memory_start + 7) & ~7;  /* TODO: Alignment, tjek efter */
+  uintptr_t aligned_memory_end   = memory_end & ~7;    /* TODO: Alignment, tjek gerne efter */
+  BlockHeader * first_block = (BlockHeader *)aligned_memory_start; 
+  BlockHeader * last_block = (BlockHeader *)aligned_memory_end;
 
   /* Already initalized ? */
   if (first == NULL) {
     /* Check that we have room for at least one free block and an end header */
     if (aligned_memory_start + 2*sizeof(BlockHeader) + MIN_SIZE <= aligned_memory_end) {
-      /* TODO: Place first and last blocks and set links and free flags properly */
-    }
-    current = first;     
+      /* TODO: Place first and last blocks and set links and free flags properly, tjek efter*/
+      SET_NEXT(first_block, last_block);
+      SET_FREE(first_block, 1); // Marker første blok som fri
+      // Opret en dummy-blok ved slutningen af hukommelsesregionen
+      last_block->next = (BlockHeader *)aligned_memory_start; // Pege tilbage til første blok
+      SET_FREE(last_block, 0);                                // Dummy-blokken er altid markeret som allokeret
+
+      first = first_block; // Indstil "first" til at pege på den første blok
+      current = first;     // Indstil current til første blok for next-fit søgning
+    }    
   } 
 }
 
