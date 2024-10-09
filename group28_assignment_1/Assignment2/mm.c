@@ -19,12 +19,13 @@ typedef struct header {
   uint64_t user_block[0];   // Standard trick: Empty array to make sure start of user block is aligned
 } BlockHeader;
 
+
 /* Macros to handle the free flag at bit 0 of the next pointer of header pointed at by p */
-#define GET_NEXT(p)    (void *) (p->next)    /* TODO: Mask out free flag */
-#define SET_NEXT(p,n)  p->next = (void *) n  /* TODO: Preserve free flag */
+#define GET_NEXT(p)    (void *) ((uintptr_t)(p->next) & ~(uintptr_t)0x1)                   /* TODO Mask out free flag, tjek dem  */
+#define SET_NEXT(p,n)  p->next = (void *) ((uintptr_t)(n) | ((uintptr_t)(p->next) & 0x1))  /* TODO Preserve free flag, tjek dem*/
 #define GET_FREE(p)    (uint8_t) ( (uintptr_t) (p->next) & 0x1 )   /* OK -- do not change */
-#define SET_FREE(p,f)  /* TODO: Set free bit of p->next to f */
-#define SIZE(p)        (size_t) ( 0 ) /* TODO: Caluculate size of block from p and p->next */ 
+#define SET_FREE(p,f)  p->next = (void *) ((uintptr_t)GET_NEXT(p) | (uintptr_t)(f & 0x1)) /* TODO Set free bit of p->next to f, tjek dem  */
+#define SIZE(p)        (size_t) ((uintptr_t)GET_NEXT(p) - (uintptr_t)(p) - sizeof(BlockHeader)) /* TODO Caluculate size of block from p and p->next, tjek dem  */
 
 #define MIN_SIZE     (8)   // A block should have at least 8 bytes available for the user
 
