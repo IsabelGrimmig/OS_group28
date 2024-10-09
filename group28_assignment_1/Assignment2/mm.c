@@ -28,6 +28,10 @@ typedef struct header {
 
 #define MIN_SIZE     (8)   // A block should have at least 8 bytes available for the user
 
+void split_block(BlockHeader *block, size_t size);
+void coalesce(BlockHeader *block);
+
+
 
 static BlockHeader * first = NULL;
 static BlockHeader * current = NULL;
@@ -70,7 +74,6 @@ void simple_init() {
  *
  */
 void* simple_malloc(size_t size) {
-  
     if (first == NULL) {
         simple_init();
         if (first == NULL) return NULL;
@@ -92,8 +95,13 @@ void* simple_malloc(size_t size) {
                 }
                 // Mark block as allocated (non-free)
                 SET_FREE(current, 0);
+                
+                // Update current pointer for next-fit allocation
+                BlockHeader* allocated_block = current;
+                current = GET_NEXT(current);  // Move to the next block after allocation
+                
                 // Return the pointer to the start of the memory area after the block header
-                return (void *)(current + 1);
+                return (void *)(allocated_block + 1);
             }
         }
         current = GET_NEXT(current);  // Move to the next block
@@ -102,6 +110,7 @@ void* simple_malloc(size_t size) {
     // No suitable block found
     return NULL;
 }
+
 
 
 
