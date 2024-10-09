@@ -19,13 +19,12 @@ typedef struct header {
   uint64_t user_block[0];   // Standard trick: Empty array to make sure start of user block is aligned
 } BlockHeader;
 
-
 /* Macros to handle the free flag at bit 0 of the next pointer of header pointed at by p */
-#define GET_NEXT(p)    (void *) ((uintptr_t)(p->next) & ~(uintptr_t)0x1)                   /* TODO Mask out free flag, tjek dem  */
-#define SET_NEXT(p,n)  p->next = (void *) ((uintptr_t)(n) | ((uintptr_t)(p->next) & 0x1))  /* TODO Preserve free flag, tjek dem*/
+#define GET_NEXT(p)    (BlockHeader *)((uintptr_t)(p->next) & ~0x1)  // Mask out the free flag
+#define SET_NEXT(p,n)  p->next = (BlockHeader *)(((uintptr_t)n & ~0x1) | ((uintptr_t)p->next & 0x1))  // Preserve the free flag
 #define GET_FREE(p)    (uint8_t) ( (uintptr_t) (p->next) & 0x1 )   /* OK -- do not change */
-#define SET_FREE(p,f)  p->next = (void *) ((uintptr_t)GET_NEXT(p) | (uintptr_t)(f & 0x1)) /* TODO Set free bit of p->next to f, tjek dem  */
-#define SIZE(p)        (size_t) ((uintptr_t)GET_NEXT(p) - (uintptr_t)(p) - sizeof(BlockHeader)) /* TODO Caluculate size of block from p and p->next, tjek dem  */
+#define SET_FREE(p,f)  p->next = (BlockHeader *)(((uintptr_t)p->next & ~0x1) | (f & 0x1))
+#define SIZE(p)    ((uintptr_t)(GET_NEXT(p)) - (uintptr_t)(p) - sizeof(BlockHeader))
 
 #define MIN_SIZE     (8)   // A block should have at least 8 bytes available for the user
 
@@ -39,27 +38,25 @@ static BlockHeader * current = NULL;
  *
  */
 void simple_init() {
-  uintptr_t aligned_memory_start = (memory_start + 7) & ~7;  /* TODO: Alignment, tjek efter */
-  uintptr_t aligned_memory_end   = memory_end & ~7;    /* TODO: Alignment, tjek gerne efter */
-  BlockHeader * first_block = (BlockHeader *)aligned_memory_start; 
-  BlockHeader * last_block = (BlockHeader *)aligned_memory_end;
+    uintptr_t aligned_memory_start = (memory_start + 7) & ~0x07;
+    uintptr_t aligned_memory_end = memory_end & ~0x07;
 
-  /* Already initalized ? */
-  if (first == NULL) {
-    /* Check that we have room for at least one free block and an end header */
-    if (aligned_memory_start + 2*sizeof(BlockHeader) + MIN_SIZE <= aligned_memory_end) {
-      /* TODO: Place first and last blocks and set links and free flags properly, tjek efter*/
-      SET_NEXT(first_block, last_block);
-      SET_FREE(first_block, 1); // Marker første blok som fri
-      // Opret en dummy-blok ved slutningen af hukommelsesregionen
-      last_block->next = (BlockHeader *)aligned_memory_start; // Pege tilbage til første blok
-      SET_FREE(last_block, 0);                                // Dummy-blokken er altid markeret som allokeret
+    if (aligned_memory_start + 2 * sizeof(BlockHeader) + MIN_SIZE <= aligned_memory_end) {
+        first = (BlockHeader *)aligned_memory_start;
+        SET_NEXT(first, (BlockHeader *)(aligned_memory_end - sizeof(BlockHeader)));
+        SET_FREE(first, 1);
 
-      first = first_block; // Indstil "first" til at pege på den første blok
-      current = first;     // Indstil current til første blok for next-fit søgning
-    }    
-  } 
+        BlockHeader *dummy = (BlockHeader *)(aligned_memory_end - sizeof(BlockHeader));
+        SET_NEXT(dummy, first);
+        SET_FREE(dummy, 0);
+
+        current = first;
+    } else {
+        first = NULL;
+    }
 }
+
+
 
 
 /**
@@ -74,40 +71,38 @@ void simple_init() {
  */
 void* simple_malloc(size_t size) {
   
-  if (first == NULL) {
-    simple_init();
-    if (first == NULL) return NULL;
-  }
-
-  size_t aligned_size = size;  /* TODO: Alignment */
-
-  /* Search for a free block */
-  BlockHeader * search_start = current;
-  do {
- 
-    if (GET_FREE(current)) {
-
-      /* Possibly coalesce consecutive free blocks here */
-
-      /* Check if free block is large enough */
-      if (SIZE(current) >= aligned_size) {
-        /* Will the remainder be large enough for a new block? */
-        if (SIZE(current) - aligned_size < sizeof(BlockHeader) + MIN_SIZE) {
-          /* TODO: Use block as is, marking it non-free*/
-        } else {
-          /* TODO: Carve aligned_size from block and allocate new free block for the rest */
-        }
-        
-        return (void *) NULL; /* TODO: Return address of current's user_block and advance current */
-      }
+    if (first == NULL) {
+        simple_init();
+        if (first == NULL) return NULL;
     }
 
-    current = GET_NEXT(current);
-  } while (current != search_start);
+    // Align the requested size to 8 bytes
+    size_t aligned_size = (size + 7) & ~0x07;
 
- /* None found */
-  return NULL;
+    // Search for a free block
+    BlockHeader *search_start = current;
+    do {
+        if (GET_FREE(current)) {
+            // Check if free block is large enough
+            if (SIZE(current) >= aligned_size) {
+                // Will the remainder be large enough for a new block?
+                if (SIZE(current) - aligned_size >= sizeof(BlockHeader) + MIN_SIZE) {
+                    // Split the block
+                    split_block(current, aligned_size);
+                }
+                // Mark block as allocated (non-free)
+                SET_FREE(current, 0);
+                // Return the pointer to the start of the memory area after the block header
+                return (void *)(current + 1);
+            }
+        }
+        current = GET_NEXT(current);  // Move to the next block
+    } while (current != search_start);  // Loop until all blocks are checked
+
+    // No suitable block found
+    return NULL;
 }
+
 
 
 /**
@@ -119,16 +114,38 @@ void* simple_malloc(size_t size) {
  * @param void *ptr Pointer to the memory to free.
  *
  */
-void simple_free(void * ptr) {
-  BlockHeader * block = NULL; /* TODO: Find block corresponding to ptr */
-  if (GET_FREE(block)) {
-    /* Block is not in use -- probably an error */
-    return;
-  }
+void simple_free(void *ptr) {
+    if (!ptr) return;  // Null check
 
-  /* TODO: Free block */
+    // Find the block header corresponding to the pointer
+    BlockHeader *block = (BlockHeader *)ptr - 1;  // The block header is just before the memory area
 
-  /* Possibly coalesce consecutive free blocks here */
+    // Mark the block as free
+    SET_FREE(block, 1);
+
+    // Coalesce with adjacent free blocks if possible
+    coalesce(block);
 }
+
+
+void split_block(BlockHeader *block, size_t size) {
+    BlockHeader *new_block = (BlockHeader *)((uintptr_t)block + sizeof(BlockHeader) + size);
+    SET_NEXT(new_block, GET_NEXT(block));  // Link the new block to the next block
+    SET_NEXT(block, new_block);  // Link the current block to the new block
+    SET_FREE(new_block, 1);  // Mark the new block as free
+}
+
+void coalesce(BlockHeader *block) {
+    // Get the next block
+    BlockHeader *next = GET_NEXT(block);
+
+    // Check if the next block is free
+    if (next != first && GET_FREE(next)) {
+        // Merge the current block with the next block
+        SET_NEXT(block, GET_NEXT(next));  // Point the current block to the block after the next one
+    }
+
+}
+
 
 
