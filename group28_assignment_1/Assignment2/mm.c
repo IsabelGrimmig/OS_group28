@@ -1,160 +1,175 @@
-/**
- * @file   mm.c
- * @Author 02335 team
- * @date   September, 2024
- * @brief  Memory management skeleton.
- * 
- */
-
 #include <stdint.h>
-
+#include <stdio.h>
 #include "mm.h"
 
-
-
-/* Proposed data structure elements */
-
 typedef struct header {
-  struct header * next;     // Bit 0 is used to indicate free block 
-  uint64_t user_block[0];   // Standard trick: Empty array to make sure start of user block is aligned
+    struct header *next;     // Bit 0 is used to indicate free block 
+    uint64_t user_block;  // Empty array to ensure user block is aligned
 } BlockHeader;
 
-/* Macros to handle the free flag at bit 0 of the next pointer of header pointed at by p */
-#define GET_NEXT(p)    (BlockHeader *)((uintptr_t)(p->next) & ~0x1)  // Mask out the free flag
-#define SET_NEXT(p,n)  p->next = (BlockHeader *)(((uintptr_t)n & ~0x1) | ((uintptr_t)p->next & 0x1))  // Preserve the free flag
-#define GET_FREE(p)    (uint8_t) ( (uintptr_t) (p->next) & 0x1 )   /* OK -- do not change */
-#define SET_FREE(p,f)  p->next = (BlockHeader *)(((uintptr_t)p->next & ~0x1) | (f & 0x1))
-#define SIZE(p)    ((uintptr_t)(GET_NEXT(p)) - (uintptr_t)(p) - sizeof(BlockHeader))
+/* Macros to handle the free flag and next pointer */
+#define GET_NEXT(p)    (BlockHeader *)((uintptr_t)(p->next) & ~0x1)
+#define SET_NEXT(p, n) p->next = (BlockHeader *)(((uintptr_t)n & ~0x1) | ((uintptr_t)p->next & 0x1))
+#define GET_FREE(p)    (uint8_t)((uintptr_t)(p->next) & 0x1)
+#define SET_FREE(p, f) p->next = (BlockHeader *)(((uintptr_t)p->next & ~0x1) | (f & 0x1))
+#define SIZE(p)        ((uintptr_t)(GET_NEXT(p)) - (uintptr_t)(p) - sizeof(BlockHeader))
 
-#define MIN_SIZE     (8)   // A block should have at least 8 bytes available for the user
+#define MIN_SIZE       (8)
 
 void split_block(BlockHeader *block, size_t size);
 void coalesce(BlockHeader *block);
+void coalesce_all_blocks();  // New function for memory defragmentation
 
+static BlockHeader *first = NULL;
+static BlockHeader *current = NULL;
 
-
-static BlockHeader * first = NULL;
-static BlockHeader * current = NULL;
-
-/**
- * @name    simple_init
- * @brief   Initialize the block structure within the available memory
- *
- */
+/* Initialize the memory block structure */
 void simple_init() {
     uintptr_t aligned_memory_start = (memory_start + 7) & ~0x07;
     uintptr_t aligned_memory_end = memory_end & ~0x07;
 
-    if (aligned_memory_start + 2 * sizeof(BlockHeader) + MIN_SIZE <= aligned_memory_end) {
-        first = (BlockHeader *)aligned_memory_start;
-        SET_NEXT(first, (BlockHeader *)(aligned_memory_end - sizeof(BlockHeader)));
-        SET_FREE(first, 1);
-
-        BlockHeader *dummy = (BlockHeader *)(aligned_memory_end - sizeof(BlockHeader));
-        SET_NEXT(dummy, first);
-        SET_FREE(dummy, 0);
-
-        current = first;
-    } else {
-        first = NULL;
+    // Check if there is enough memory for at least one block and the dummy block
+    if (aligned_memory_start + 2 * sizeof(BlockHeader) + MIN_SIZE > aligned_memory_end) {
+        printf("Error: Not enough memory to initialize the block structure.\n");
+        first = NULL;  // Mark initialization failure
+        return;
     }
+
+    first = (BlockHeader *)aligned_memory_start;
+    SET_NEXT(first, (BlockHeader *)(aligned_memory_end - sizeof(BlockHeader)));
+    SET_FREE(first, 1);
+
+    BlockHeader *dummy = (BlockHeader *)(aligned_memory_end - sizeof(BlockHeader));
+    SET_NEXT(dummy, first);
+    SET_FREE(dummy, 0);
+
+    current = first;
 }
 
-
-
-
-/**
- * @name    simple_malloc
- * @brief   Allocate at least size contiguous bytes of memory and return a pointer to the first byte.
- *
- * This function should behave similar to a normal malloc implementation. 
- *
- * @param size_t size Number of bytes to allocate.
- * @retval Pointer to the start of the allocated memory or NULL if not possible.
- *
- */
+/* Allocates a block of memory */
 void* simple_malloc(size_t size) {
+    printf("Requesting allocation of size: %zu\n", size);
+
     if (first == NULL) {
         simple_init();
-        if (first == NULL) return NULL;
+        if (first == NULL) {
+            printf("Memory initialization failed! Not enough memory to set up the block structure.\n");
+            return NULL;
+        }
     }
 
     // Align the requested size to 8 bytes
     size_t aligned_size = (size + 7) & ~0x07;
+    printf("Aligned size: %zu\n", aligned_size);
 
-    // Search for a free block
     BlockHeader *search_start = current;
-    do {
-        if (GET_FREE(current)) {
-            // Check if free block is large enough
-            if (SIZE(current) >= aligned_size) {
-                // Will the remainder be large enough for a new block?
-                if (SIZE(current) - aligned_size >= sizeof(BlockHeader) + MIN_SIZE) {
-                    // Split the block
-                    split_block(current, aligned_size);
-                }
-                // Mark block as allocated (non-free)
+    int search_attempts = 0;  // Track the number of cycles through memory
+
+    while (search_attempts < 2) {  // Allow two full cycles through memory to avoid fragmentation
+        printf("Checking block at %p with size %zu, free status: %d\n", current, SIZE(current), GET_FREE(current));
+
+        if (GET_FREE(current) && SIZE(current) >= aligned_size) {
+            printf("Found a free block at %p of size %zu\n", current, SIZE(current));
+
+            if (SIZE(current) == aligned_size) {
+                // Exact fit, no need to split
                 SET_FREE(current, 0);
-                
-                // Update current pointer for next-fit allocation
-                BlockHeader* allocated_block = current;
-                current = GET_NEXT(current);  // Move to the next block after allocation
-                
-                // Return the pointer to the start of the memory area after the block header
+                BlockHeader *allocated_block = current;
+                current = GET_NEXT(current);
+                printf("Allocated exact-fit block at %p\n", allocated_block);
                 return (void *)(allocated_block + 1);
+            } else if (SIZE(current) - aligned_size >= sizeof(BlockHeader) + MIN_SIZE) {
+                // Split the block if remaining size is enough
+                printf("Splitting block at %p\n", current);
+                split_block(current, aligned_size);
+            }
+
+            SET_FREE(current, 0);
+            BlockHeader *allocated_block = current;
+            current = GET_NEXT(current);
+            printf("Allocated block at %p with size %zu\n", allocated_block, SIZE(allocated_block));
+            return (void *)(allocated_block + 1);  // Return pointer to memory region after header
+        }
+
+        current = GET_NEXT(current);  // Move to the next block
+        printf("Moving to next block: %p\n", current);
+
+        // If we complete one full cycle, attempt another to check for potential memory compaction opportunities
+        if (current == search_start) {
+            search_attempts++;
+            printf("Completed one cycle through memory, retrying to avoid fragmentation.\n");
+            if (search_attempts == 2) {
+                printf("Attempting to coalesce all blocks to defragment memory.\n");
+                coalesce_all_blocks();  // New defragmentation attempt
+                current = first;  // Start over after coalescing
             }
         }
-        current = GET_NEXT(current);  // Move to the next block
-    } while (current != search_start);  // Loop until all blocks are checked
+    }
 
-    // No suitable block found
-    return NULL;
+    // If no suitable block is found after two full cycles
+    printf("No suitable block found for size %zu after multiple attempts. Memory allocation failed!\n", aligned_size);
+    return NULL;  // Return NULL to indicate memory allocation failure
 }
 
-
-
-
-/**
- * @name    simple_free
- * @brief   Frees previously allocated memory and makes it available for subsequent calls to simple_malloc
- *
- * This function should behave similar to a normal free implementation. 
- *
- * @param void *ptr Pointer to the memory to free.
- *
- */
+/* Frees the allocated block */
 void simple_free(void *ptr) {
-    if (!ptr) return;  // Null check
+    if (!ptr) return;
 
-    // Find the block header corresponding to the pointer
-    BlockHeader *block = (BlockHeader *)ptr - 1;  // The block header is just before the memory area
-
-    // Mark the block as free
+    BlockHeader *block = (BlockHeader *)ptr - 1;
     SET_FREE(block, 1);
-
-    // Coalesce with adjacent free blocks if possible
     coalesce(block);
 }
 
-
+/* Splits a block */
 void split_block(BlockHeader *block, size_t size) {
-    BlockHeader *new_block = (BlockHeader *)((uintptr_t)block + sizeof(BlockHeader) + size);
-    SET_NEXT(new_block, GET_NEXT(block));  // Link the new block to the next block
-    SET_NEXT(block, new_block);  // Link the current block to the new block
-    SET_FREE(new_block, 1);  // Mark the new block as free
+    size_t remaining_size = SIZE(block) - size - sizeof(BlockHeader);
+
+    // Only split if the remaining size is large enough
+    if (remaining_size >= sizeof(BlockHeader) + MIN_SIZE) {
+        BlockHeader *new_block = (BlockHeader *)((uintptr_t)block + sizeof(BlockHeader) + size);
+        SET_NEXT(new_block, GET_NEXT(block));
+        SET_NEXT(block, new_block);
+        SET_FREE(new_block, 1);  // Mark the new block as free
+        printf("Block at %p split into new block at %p with remaining size %zu\n", block, new_block, remaining_size);
+    }
 }
 
+/* Coalesces adjacent free blocks */
 void coalesce(BlockHeader *block) {
-    // Get the next block
     BlockHeader *next = GET_NEXT(block);
+    
+    // Ensure we don't coalesce past the last block
+    while (GET_FREE(next) && (uintptr_t)next >= (uintptr_t)first && (uintptr_t)next < (uintptr_t)memory_end) {
+        printf("Coalescing block at %p with next block at %p\n", block, next);
+        SET_NEXT(block, GET_NEXT(next));  // Merge the current block with the next block
+        next = GET_NEXT(block);  // Move to the next block and check again
 
-    // Check if the next block is free
-    if (next != first && GET_FREE(next)) {
-        // Merge the current block with the next block
-        SET_NEXT(block, GET_NEXT(next));  // Point the current block to the block after the next one
+        // Add a safety check to prevent infinite loops
+        if (next == block) {
+            printf("Warning: Detected potential infinite loop in coalesce function.\n");
+            break;
+        }
     }
 
+    printf("Final coalesced block at %p with size %zu\n", block, SIZE(block));
 }
 
+/* Defragmentation: Coalesces all free blocks */
+void coalesce_all_blocks() {
+    BlockHeader *block = first;
+    BlockHeader *start = first;  // Keep track of the starting block to detect a full cycle
 
+    do {
+        if (GET_FREE(block)) {
+            coalesce(block);  // Try to coalesce all free blocks
+        }
+        block = GET_NEXT(block);
+
+        // Add a safety check to prevent infinite loops
+        if (block == start) {
+            printf("Warning: Detected potential infinite loop in coalesce_all_blocks function.\n");
+            break;
+        }
+    } while ((uintptr_t)block >= (uintptr_t)first && (uintptr_t)block < (uintptr_t)memory_end);
+}
 

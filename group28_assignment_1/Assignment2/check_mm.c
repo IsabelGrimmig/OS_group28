@@ -276,6 +276,59 @@ START_TEST (test_memory_exerciser)
 
 END_TEST
 
+START_TEST(test_allocation)
+{
+    // Allocate a small block of memory
+    int *ptr = MALLOC(10 * sizeof(int));
+    ck_assert(ptr != NULL);  // Ensure the pointer is valid
+
+    FREE(ptr);  // Free the block
+}
+END_TEST
+
+START_TEST(test_coalescing)
+{
+    // Allocate two adjacent blocks
+    int *block1 = MALLOC(20 * sizeof(int));
+    int *block2 = MALLOC(20 * sizeof(int));
+
+    ck_assert(block1 != NULL);
+    ck_assert(block2 != NULL);
+
+    // Free both blocks
+    FREE(block1);
+    FREE(block2);
+
+    // Allocate a larger block (should reuse the coalesced space)
+    int *large_block = MALLOC(40 * sizeof(int));
+    ck_assert(large_block != NULL);
+
+    FREE(large_block);
+}
+END_TEST
+
+START_TEST(test_multiple_allocations)
+{
+    // Allocate several small blocks
+    int *block1 = MALLOC(10 * sizeof(int));
+    int *block2 = MALLOC(15 * sizeof(int));
+    int *block3 = MALLOC(20 * sizeof(int));
+
+    ck_assert(block1 != NULL);
+    ck_assert(block2 != NULL);
+    ck_assert(block3 != NULL);
+
+    // Free the blocks
+    FREE(block1);
+    FREE(block2);
+    FREE(block3);
+}
+END_TEST
+
+
+
+
+
 /**
  * { You may provide more unit tests here, but remember to add them to simple_malloc_suite }
  */
@@ -290,13 +343,17 @@ Suite* simple_malloc_suite()
   Suite *s = suite_create("simple_malloc");
   TCase *tc_core = tcase_create("Core tests");
   tcase_set_timeout(tc_core, 120);
+
   tcase_add_test (tc_core, test_simple_allocation);
   tcase_add_test (tc_core, test_simple_unique_addresses);
   tcase_add_test (tc_core, test_memory_exerciser);
+  tcase_add_test(tc_core, test_allocation);
+  tcase_add_test(tc_core, test_coalescing);
 
   suite_add_tcase(s, tc_core);
   return s;
 }
+
 
 
 /**
