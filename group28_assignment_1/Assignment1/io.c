@@ -42,40 +42,48 @@ int write_string(char* s) {
 
 // Writes n to stdout (without any formatting). If no errors occur, it returns 0, otherwise EOF
 int write_int(int n) {
-    int n:
-    char buffer[size]
+    int write_int(int n)
+    {
+        char buffer[12]; // Buffer large enough to hold an integer, including sign and null terminator
+        int length = 0;
 
-    int index = 0
+        // Håndterer det specielle tilfælde, hvor n er nul
+        if (n == 0)
+        {
+            buffer[length++] = '0';
+        }
+        else
+        {
+            // Håndterer negative tal
+            if (n < 0)
+            {
+                buffer[length++] = '-'; // Tilføj minustegn til buffer
+                n = -n;                 // Konverter n til positivt
+            }
 
-    if n == 0:
-        buffer[0] = '0'
-        buffer[1] = '\0'
-        return write_string(buffer)
+            // Konverterer integeren til en streng (lagres omvendt i buffer)
+            int start = length;
+            while (n > 0)
+            {
+                buffer[length++] = '0' + (n % 10); // Tilføj cifferet til buffer
+                n /= 10;                           // Gå til næste ciffer
+            }
 
-    if negative:
-        buffer[index++] = '-'
-        n = -n
+            // Reversér bufferens indhold for at få cifrene i korrekt rækkefølge
+            for (int i = start, j = length - 1; i < j; i++, j--)
+            {
+                char temp = buffer[i];
+                buffer[i] = buffer[j];
+                buffer[j] = temp;
+            }
+        }
 
-    //keeping track of first digit in case of negative integer
-    int first_digit = index
+        // Null-terminér strengen
+        buffer[length] = '\0';
 
-    while (n > 0):
-        buffer[index++] = (char) (n%10)
-        n /= 10
-
-    //keep track of where the last digit is, for adding a null-terminator later
-    int last_digit = index
-
-//reverse the list, without the start
-    for (int i = 0; i < last_digit, i++):
-        int p1 = i + first_digit
-        int p2 = index--
-        char temp = buffer[p1]
-        buffer[p1] = buffer[p2]
-        buffer[p2] = temp
-
-    buffer[last_digit + 1] = '/0'
-    return write_string(buffer)
+        // Brug write_string-funktionen til at udskrive resultatet
+        return write_string(buffer);
+    }
 
 /*
     char buffer[12] = {'\0'};    // Buffer large enough to hold an integer, assuming no more than 11 digits + null terminator
