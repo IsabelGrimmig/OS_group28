@@ -41,7 +41,7 @@ int write_string(char* s) {
 }
 
 // Writes n to stdout (without any formatting). If no errors occur, it returns 0, otherwise EOF
-int write_int(int n) {
+//int write_int(int n) {
     int write_int(int n)
     {
         char buffer[13]; // Buffer large enough to hold an integer of 11 digits, including sign and null terminator.
@@ -115,4 +115,4 @@ int write_int(int n) {
         return write_string(buffer);        // Use write_string to write it to stdout
 */
   
-}
+//}
