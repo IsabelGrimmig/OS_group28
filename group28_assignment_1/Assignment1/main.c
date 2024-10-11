@@ -67,7 +67,7 @@ int main(){
            
             if (new_collection == NULL) {
                 write_string("Memory reallocation failed\n");
-                free(collection)
+                free(collection);
                 return 1;  // Exit if memory reallocation fails
             }
             for (int i = 0; i < capacity; i++) {
