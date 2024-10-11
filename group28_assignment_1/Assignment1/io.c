@@ -44,32 +44,32 @@ int write_string(char* s) {
 int write_int(int n) {
     int write_int(int n)
     {
-        char buffer[12]; // Buffer large enough to hold an integer, including sign and null terminator
+        char buffer[13]; // Buffer large enough to hold an integer of 11 digits, including sign and null terminator.
         int length = 0;
 
-        // Håndterer det specielle tilfælde, hvor n er nul
+        // Handles special cases where n = 0
         if (n == 0)
         {
             buffer[length++] = '0';
         }
         else
         {
-            // Håndterer negative tal
+            // Handles negative numbers
             if (n < 0)
             {
-                buffer[length++] = '-'; // Tilføj minustegn til buffer
-                n = -n;                 // Konverter n til positivt
+                buffer[length++] = '-'; // Adds a '-' to the buffer
+                n = -n;                 // Converts n to a positive
             }
 
-            // Konverterer integeren til en streng (lagres omvendt i buffer)
+            // converts the integer to a string (is stored in reverse in the buffer)
             int start = length;
             while (n > 0)
             {
-                buffer[length++] = '0' + (n % 10); // Tilføj cifferet til buffer
-                n /= 10;                           // Gå til næste ciffer
+                buffer[length++] = '0' + (n % 10); // Adds the digit to the buffer
+                n /= 10;                           // Go to the next digit
             }
 
-            // Reversér bufferens indhold for at få cifrene i korrekt rækkefølge
+            // Reverses the contents of the buffer to get it in the correct order
             for (int i = start, j = length - 1; i < j; i++, j--)
             {
                 char temp = buffer[i];
@@ -78,10 +78,10 @@ int write_int(int n) {
             }
         }
 
-        // Null-terminér strengen
+        // Null-terminates the string
         buffer[length] = '\0';
 
-        // Brug write_string-funktionen til at udskrive resultatet
+        // use the write_string function to print the result
         return write_string(buffer);
     }
 
