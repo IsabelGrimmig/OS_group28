@@ -138,21 +138,16 @@ void split_block(BlockHeader *block, size_t size) {
 void coalesce(BlockHeader *block) {
     BlockHeader *next = GET_NEXT(block);
     
-    // Ensure we don't coalesce past the last block
-    while (GET_FREE(next) && (uintptr_t)next >= (uintptr_t)first && (uintptr_t)next < (uintptr_t)memory_end) {
+    // Ensure we don't coalesce past the last block (dummy block)
+    while (GET_FREE(next) && next != first) {
         printf("Coalescing block at %p with next block at %p\n", block, next);
         SET_NEXT(block, GET_NEXT(next));  // Merge the current block with the next block
-        next = GET_NEXT(block);  // Move to the next block and check again
-
-        // Add a safety check to prevent infinite loops
-        if (next == block) {
-            printf("Warning: Detected potential infinite loop in coalesce function.\n");
-            break;
-        }
+        next = GET_NEXT(block);
     }
 
     printf("Final coalesced block at %p with size %zu\n", block, SIZE(block));
 }
+
 
 /* Defragmentation: Coalesces all free blocks */
 void coalesce_all_blocks() {
