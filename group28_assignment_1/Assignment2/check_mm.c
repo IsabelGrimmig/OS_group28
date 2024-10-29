@@ -355,6 +355,29 @@ END_TEST
 
 
 
+START_TEST(test_first_fit_vs_next_fit)
+{
+    int *block1 = MALLOC(50 * sizeof(int));  // Medium block
+    int *block2 = MALLOC(100 * sizeof(int)); // Larger block
+    int *block3 = MALLOC(50 * sizeof(int));  // Medium block
+
+    ck_assert(block1 != NULL);
+    ck_assert(block2 != NULL);
+    ck_assert(block3 != NULL);
+
+    FREE(block2);  // Free the larger block
+
+    // Allocate a block smaller than the free block2, ensuring it doesn't fit in block2
+    int *block4 = MALLOC(40 * sizeof(int));
+    ck_assert(block4 != block2);  // Next-fit skips the free block2, proving next-fit logic
+
+    FREE(block1);
+    FREE(block3);
+    FREE(block4);
+}
+END_TEST
+
+
 
 
 

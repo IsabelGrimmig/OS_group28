@@ -2,6 +2,7 @@
 /* You are not allowed to use <stdio.h> */
 #include "io.h"
 #include <stdlib.h>
+#include "mm.h"
 
 
 /**
@@ -51,7 +52,7 @@ int main(){
 
 
     // Allocate memory for the collection
-    collection = (int *)malloc(capacity * sizeof(int));
+    collection = (int *)simple_malloc(capacity * sizeof(int));
     if (collection == NULL) {
         write_string("Memory allocation failed\n");
         return 1;  // Exit if memory allocation fails
@@ -62,12 +63,20 @@ int main(){
         command = read_char();  // Read a command using read_char()
 
         if (counter >= capacity) {
-            capacity *= 2;
-            collection = (int *)realloc(collection, capacity * sizeof(int));
-            if (collection == NULL) {
+            int new_capacity = capacity * 2;
+            int *new_collection = (int *)simple_malloc(new_capacity * sizeof(int));
+           
+            if (new_collection == NULL) {
                 write_string("Memory reallocation failed\n");
+                simple_free(collection);
                 return 1;  // Exit if memory reallocation fails
             }
+            for (int i = 0; i < capacity; i++) {
+                new_collection[i] = collection[i];
+            }
+            simple_free(collection);            // Free the old memory
+            collection = new_collection; // Use the new collection
+            capacity = new_capacity;     // Update capacity
         }
 
         // Check if the command is valid ('a', 'b', 'c'). If not, break the loop.
@@ -81,34 +90,27 @@ int main(){
             collection[collectionSpace] = counter;
             collectionSpace++;
         } else if (command == 'c'){
-            if (collectionSpace != 0)
+            if (collectionSpace > 0)
             {
                 collectionSpace--;
             }
-collection[collectionSpace] = 0;
         }
         //write_int(counter);
         //write_string("\n");
-        counter += 1;
+        counter++;
         }
     }
 
     // Print the collection as a comma-delimited series of integers
-    for (int i = 0; i < counter; i++) {
-        if (i != 0 && collection[i] != 0) {
+    for (int i = 0; i < collectionSpace; i++) {
+        if (i != 0) {
             write_char(',');  // Print a comma before each element except the first
         }
-        if (i != 0 && collection[i] == 0)
-        {
-        
-        }else
-        {
-            write_int(collection[i]);
-        }
+        write_int(collection[i]);
     }
     write_char(';');
     write_char('\n');  // Print a newline after the collection
-    free(collection);
+    simple_free(collection);
 
     return 0;
 }
