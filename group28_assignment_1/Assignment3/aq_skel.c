@@ -53,7 +53,7 @@ AlarmQueue aq_create() {
     return (AlarmQueue)queue;
 }
 
-int aq_send( AlarmQueue aq, void * msg, MsgKind k){
+int aq_send( AlarmQueue aq, void * msg, MsgKind kind){
   if (!aq) return AQ_UNINIT;
   if (!msg) return AQ_NULL_MSG;
 
