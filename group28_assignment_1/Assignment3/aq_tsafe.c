@@ -14,9 +14,9 @@ typedef struct MsgNode {
 typedef struct {
     pthread_mutex_t lock;
     pthread_cond_t cond;
-    MsgNode *head;  // Points to the head of the queue
-    MsgNode *tail;  // Points to the tail of the queue
-    int alarm_present;  // 1 if an alarm message is in the queue, 0 otherwise
+    MsgNode *head;          // Points to the head of the queue
+    MsgNode *tail;          // Points to the tail of the queue
+    int alarm_present;      // 1 if an alarm message is in the queue, 0 otherwise
 } AlarmQueueImpl;
 
 // Create the alarm queue
@@ -112,4 +112,27 @@ void aq_destroy(AlarmQueue aq) {
     }
     
     free(queue);
+}
+
+// Get the size of the queue (number of messages)
+int aq_size(AlarmQueue aq) {
+    AlarmQueueImpl *queue = (AlarmQueueImpl *)aq;
+    pthread_mutex_lock(&queue->lock);
+    int size = 0;
+    MsgNode *current = queue->head;
+    while (current) {
+        size++;
+        current = current->next;
+    }
+    pthread_mutex_unlock(&queue->lock);
+    return size;
+}
+
+// Get the number of alarm messages in the queue (0 or 1)
+int aq_alarms(AlarmQueue aq) {
+    AlarmQueueImpl *queue = (AlarmQueueImpl *)aq;
+    pthread_mutex_lock(&queue->lock);
+    int alarms = queue->alarm_present ? 1 : 0;
+    pthread_mutex_unlock(&queue->lock);
+    return alarms;
 }

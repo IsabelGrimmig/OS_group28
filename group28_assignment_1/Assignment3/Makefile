@@ -26,7 +26,7 @@ EXECUTABLES = $(DEMO_EXECUTABLE) $(TEST_EXECUTABLE)
 
 .PHONY:  all lib clean clean-all
 
-all: lib demo test  
+all: lib $(DEMO_EXECUTABLE) $(TEST_EXECUTABLE)
 
 lib: $(LIB_DIR)/$(LIB_NAME)
 
@@ -37,10 +37,10 @@ $(LIB_DIR)/$(LIB_NAME): $(LIB_OBJECTS)
 	mkdir -p $(LIB_DIR)
 	ar -rcs $@ $^
 
-$(DEMO_EXECUTABLE): lib $(DEMO_OBJECTS)
+$(DEMO_EXECUTABLE): $(DEMO_OBJECTS) $(LIB_DIR)/$(LIB_NAME)
 	$(CC) $(CFLAGS) $(DEMO_OBJECTS) -L$(LIB_DIR) -l$(LIB) -o $@ 
 
-$(TEST_EXECUTABLE): lib $(TEST_OBJECTS)
+$(TEST_EXECUTABLE): $(TEST_OBJECTS) $(LIB_DIR)/$(LIB_NAME)
 	$(CC) $(CFLAGS) $(TEST_OBJECTS) -lpthread -L$(LIB_DIR) -l$(LIB) -o $@ 
 
 clean:
