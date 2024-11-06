@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
     // Run original producer-consumer test
     printf("Running Original Producer-Consumer Test\n");
 
-    /* Fork threads */
+    /* Fork threads*/
     pthread_create(&t1, NULL, producer, NULL);
     pthread_create(&t2, NULL, consumer, NULL);
 
