@@ -59,4 +59,3 @@ clean:
 
 clean-all: clean
 	rm -rf $(LIB_DIR) $(EXECUTABLES)
-
