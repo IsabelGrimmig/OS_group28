@@ -17,7 +17,7 @@
 typedef char MsgKind;
 
 #define AQ_ALARM        1   // Message is of kind alarm
-#define AQ_NORMAL       0   // Message if of kind normal
+#define AQ_NORMAL       0   // Message is of kind normal
 
 /* Error codes */
 #define AQ_UNINIT      -1   // Queue has not been initialized
@@ -33,36 +33,41 @@ typedef void * AlarmQueue;  // Opaque type
  * @brief   Creates and initializes an alarm queue
  * @retval  Handle to alarm queue if created, otherwise NULL
  */
-AlarmQueue aq_create( );
+AlarmQueue aq_create();
 
 /**
  * @name    aq_send
  * @brief   Sends message pointed to by msg with kind indicated.
  * @retval  0 if message was successfully sent, otherwise an error code.
  */
-int aq_send( AlarmQueue aq, void * msg, MsgKind k);
+int aq_send(AlarmQueue aq, void *msg, MsgKind k);
 
 /**
  * @name    aq_recv
  * @brief   Receives a message setting the supplied msg pointer. Blocks until message is ready.
  * @retval  Kind of message if message was received successfully, otherwise an error code.
  */
-int aq_recv( AlarmQueue aq, void * * msg);
+int aq_recv(AlarmQueue aq, void **msg);
 
 /**
  * @name    aq_size
- * @brief   Give size of alarm queue in terms of messages
- * @retval  Number of messages (of both kinds) currently held by the queue
+ * @brief   Gives the size of the alarm queue in terms of messages.
+ * @retval  Number of messages (of both kinds) currently held by the queue.
  */
-int aq_size( AlarmQueue aq);
+int aq_size(AlarmQueue aq);
 
 /**
  * @name    aq_alarms
- * @brief   Give size of alarm messages
- * @retval  Number of alarm messages currently held by the queue
+ * @brief   Gives the count of alarm messages in the queue.
+ * @retval  Number of alarm messages currently held by the queue.
  */
-int aq_alarms( AlarmQueue aq);
+int aq_alarms(AlarmQueue aq);
 
+/**
+ * @name    aq_destroy
+ * @brief   Destroys the alarm queue and frees associated resources.
+ * @param   aq - AlarmQueue instance to be destroyed.
+ */
+void aq_destroy(AlarmQueue aq);
 
 #endif /* LIBAQ_H_INCLUDED */
-
