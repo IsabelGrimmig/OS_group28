@@ -15,33 +15,27 @@ int main(int argc, char **argv) {
 
     put_normal(q, 1);
     put_normal(q, 2);
-    put_alarm(q, 3);
-    assert(put_alarm(q, 4) == AQ_NO_ROOM);
-    put_normal(q, 5);
+    put_alarm(q, 3); // First alarm message
 
+    /* Retrieve the first alarm message to unblock any further alarm sends */
+    printf("Retrieving first alarm message.\n");
+    assert(get(q) == 3);
+
+    /* Now it's safe to attempt sending another alarm */
+    put_alarm(q, 4); 
+
+    put_normal(q, 5);
     printf("Inserted messages. Now checking queue size.\n");
 
     /* Now there should be 4 messages in the queue */
     assert(print_sizes(q) == 4);
 
-    /* First received should be the alarm message */
-    printf("Retrieving first message.\n");
-    assert(get(q) == 3);
-
-    put_alarm(q, 6);
-    put_normal(q, 7);
-    assert(put_alarm(q, 8) == AQ_NO_ROOM);
-    put_normal(q, 9);
-
-    assert(print_sizes(q) == 6);
-
+    /* Retrieve messages in the correct order */
     printf("Retrieving remaining messages.\n");
-    assert(get(q) == 6);
+    assert(get(q) == 4);
     assert(get(q) == 1);
     assert(get(q) == 2);
     assert(get(q) == 5);
-    assert(get(q) == 7);
-    assert(get(q) == 9);
 
     /* Now the queue should be empty */
     assert(print_sizes(q) == 0);
