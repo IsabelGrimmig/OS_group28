@@ -37,10 +37,12 @@ AlarmQueue aq_create() {
 int aq_send(AlarmQueue aq, void *msg, MsgKind k) {
     AlarmQueueImpl *queue = (AlarmQueueImpl *)aq;
     pthread_mutex_lock(&queue->lock);
-    
+    printf("aq_send: Acquired lock. Sending message of kind %d\n", k);
+
     // If message is an alarm and an alarm is already present, block
     if (k == AQ_ALARM) {
         while (queue->alarm_present) {
+            printf("aq_send: Waiting as alarm is already present.\n");
             pthread_cond_wait(&queue->cond, &queue->lock);
         }
         queue->alarm_present = 1; // Mark that an alarm is now present
@@ -60,6 +62,7 @@ int aq_send(AlarmQueue aq, void *msg, MsgKind k) {
     }
     queue->tail = new_node;
 
+    printf("aq_send: Message sent of kind %d\n", k);
     pthread_cond_signal(&queue->cond); // Notify waiting threads
     pthread_mutex_unlock(&queue->lock);
     return 0;
@@ -69,6 +72,7 @@ int aq_send(AlarmQueue aq, void *msg, MsgKind k) {
 int aq_recv(AlarmQueue aq, void **msg) {
     AlarmQueueImpl *queue = (AlarmQueueImpl *)aq;
     pthread_mutex_lock(&queue->lock);
+    printf("aq_recv: Acquired lock. Waiting for message if queue is empty.\n");
 
     // Wait until a message is available
     while (!queue->head) {
@@ -90,6 +94,7 @@ int aq_recv(AlarmQueue aq, void **msg) {
     }
 
     free(node);
+    printf("aq_recv: Received message of kind %d\n", kind);
     pthread_cond_signal(&queue->cond); // Notify any blocked senders
     pthread_mutex_unlock(&queue->lock);
 
@@ -124,6 +129,7 @@ int aq_size(AlarmQueue aq) {
         size++;
         current = current->next;
     }
+    printf("aq_size: Queue size is %d\n", size);
     pthread_mutex_unlock(&queue->lock);
     return size;
 }
@@ -133,6 +139,7 @@ int aq_alarms(AlarmQueue aq) {
     AlarmQueueImpl *queue = (AlarmQueueImpl *)aq;
     pthread_mutex_lock(&queue->lock);
     int alarms = queue->alarm_present ? 1 : 0;
+    printf("aq_alarms: Number of alarms in queue is %d\n", alarms);
     pthread_mutex_unlock(&queue->lock);
     return alarms;
 }
