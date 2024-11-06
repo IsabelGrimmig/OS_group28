@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <pthread.h>
 #include "aq.h"
-#include "aux.h"
+#include "aux_new.h"
 
 /** 
  * Concurrent program that sends and receives a few integer messages 

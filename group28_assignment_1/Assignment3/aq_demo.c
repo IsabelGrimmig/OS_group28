@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "aq.h"
-#include "aux.h"
+#include "aux_new.h"
 
 int main(int argc, char **argv) {
     AlarmQueue q = aq_create();

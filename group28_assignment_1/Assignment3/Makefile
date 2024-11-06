@@ -9,11 +9,11 @@ LIB = aq
 LIB_DIR = mylib
 LIB_NAME = lib$(LIB).a
 
-DEMO_SOURCES = aq_demo.c aux.c
+DEMO_SOURCES = aq_demo.c aux_new.c
 DEMO_OBJECTS = $(DEMO_SOURCES:.c=.o)
 
 TEST_FILE = aq_test.c
-TEST_SOURCES = $(TEST_FILE) aux.c
+TEST_SOURCES = $(TEST_FILE) aux_new.c
 TEST_OBJECTS = $(TEST_SOURCES:.c=.o)
 
 DEMO_EXECUTABLE = demo
