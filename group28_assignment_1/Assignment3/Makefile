@@ -1,21 +1,18 @@
 CC = gcc
-
-CCWARNINGS = -W -Wall -Wno-unused-parameter -Wno-unused-variable \
-		-Wno-unused-function
-CCOPTS     = -g -O0 
-
+CCWARNINGS = -W -Wall -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function
+CCOPTS = -g -O0
 CFLAGS = $(CCWARNINGS) $(CCOPTS)
 
 LIB_SOURCES = aq_tsafe.c
 LIB_OBJECTS = $(LIB_SOURCES:.c=.o)
-LIB         = aq
-LIB_DIR     = mylib
-LIB_NAME    = lib$(LIB).a
+LIB = aq
+LIB_DIR = mylib
+LIB_NAME = lib$(LIB).a
 
 DEMO_SOURCES = aq_demo.c aux.c
 DEMO_OBJECTS = $(DEMO_SOURCES:.c=.o)
 
-TEST_FILE   ?= aq_test.c
+TEST_FILE = aq_test.c
 TEST_SOURCES = $(TEST_FILE) aux.c
 TEST_OBJECTS = $(TEST_SOURCES:.c=.o)
 
@@ -24,7 +21,7 @@ TEST_EXECUTABLE = test
 
 EXECUTABLES = $(DEMO_EXECUTABLE) $(TEST_EXECUTABLE)
 
-.PHONY:  all lib clean clean-all
+.PHONY: all lib clean clean-all
 
 all: lib $(DEMO_EXECUTABLE) $(TEST_EXECUTABLE)
 

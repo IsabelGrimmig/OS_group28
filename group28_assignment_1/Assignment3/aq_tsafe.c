@@ -72,34 +72,51 @@ int aq_send(AlarmQueue aq, void *msg, MsgKind k) {
 int aq_recv(AlarmQueue aq, void **msg) {
     AlarmQueueImpl *queue = (AlarmQueueImpl *)aq;
     pthread_mutex_lock(&queue->lock);
-    printf("aq_recv: Acquired lock. Waiting for message if queue is empty.\n");
 
     // Wait until a message is available
     while (!queue->head) {
         pthread_cond_wait(&queue->cond, &queue->lock);
     }
 
-    // Get the message at the head
+    // Look for an alarm message first if it exists
     MsgNode *node = queue->head;
+    MsgNode *prev = NULL;
+
+    if (queue->alarm_present) {
+        // Search for the alarm message in the queue
+        while (node && node->kind != AQ_ALARM) {
+            prev = node;
+            node = node->next;
+        }
+        // If found, detach it from the queue
+        if (prev) {
+            prev->next = node->next;
+        } else {
+            queue->head = node->next;
+        }
+        if (node == queue->tail) {
+            queue->tail = prev;
+        }
+        queue->alarm_present = 0;  // Reset alarm presence flag
+    } else {
+        // No alarm present, retrieve the first message (FIFO)
+        node = queue->head;
+        queue->head = node->next;
+        if (!queue->head) {
+            queue->tail = NULL;
+        }
+    }
+
     *msg = node->msg;
     int kind = node->kind;
-
-    // Update head and alarm presence
-    queue->head = node->next;
-    if (!queue->head) {
-        queue->tail = NULL;
-    }
-    if (kind == AQ_ALARM) {
-        queue->alarm_present = 0; // Allow new alarm messages
-    }
-
     free(node);
-    printf("aq_recv: Received message of kind %d\n", kind);
+
     pthread_cond_signal(&queue->cond); // Notify any blocked senders
     pthread_mutex_unlock(&queue->lock);
 
     return kind;
 }
+
 
 // Destroy the alarm queue
 void aq_destroy(AlarmQueue aq) {
