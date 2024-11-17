@@ -12,8 +12,7 @@ LIB_NAME = lib$(LIB).a
 DEMO_SOURCES = aq_demo.c aux_new.c
 DEMO_OBJECTS = $(DEMO_SOURCES:.c=.o)
 
-TEST_FILE = aq_test.c
-TEST_SOURCES = $(TEST_FILE) aux_new.c
+TEST_SOURCES = aq_test.c aux_new.c
 TEST_OBJECTS = $(TEST_SOURCES:.c=.o)
 
 DEMO_EXECUTABLE = demo
@@ -45,11 +44,3 @@ clean:
 
 clean-all: clean
 	rm -rf $(LIB_DIR) $(EXECUTABLES)
-
-
-test_aq: aq_test.c aq_tsafe.c aq.h
-    $(CC) -o test_aq aq_test.c aq_tsafe.c -lpthread
-
-demo_aq: aq_demo.c aq_seq.c aq.h
-	$(CC) -o demo_aq aq_demo.c aq_seq.c -lpthread
-	
