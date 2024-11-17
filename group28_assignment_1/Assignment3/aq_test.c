@@ -14,26 +14,40 @@ static AlarmQueue q;
 
 // Producer and Consumer Test
 void *producer(void *arg){
-    msleep(500);
-    put_normal(q, 1);
-    msleep(500);
-    put_normal(q, 2);
-    put_normal(q, 3);
-    return NULL;
-}
+        msleep(500);
+        int message1 = 1;
+        put_normal(q, message1);
+
+        msleep(500);
+        int message2 = 2;
+        put_normal(q, message2);
+
+        int message3 = 3;
+        put_normal(q, message3);
+        return NULL;
+    }
 
 void *consumer(void *arg){
-    get(q);
-    get(q);
-    get(q);
+    int msg;
+    msg = get(q);
+    printf("Consumer received: %d\n", msg);
+
+    msg = get(q);
+    printf("Consumer received: %d\n", msg);
+
+    msg = get(q);
+    printf("Consumer received: %d\n", msg);
     return NULL;
 }
-
 // Test 1: Blocking Alarm Message Test
 void *send_alarm(void *queue){
-    int result = aq_send((AlarmQueue)queue, "Alarm Message", AQ_ALARM);
+    char *message = malloc(20);
+    sprintf(message, "Alarm Message");
+
+    int result = aq_send((AlarmQueue)queue, message, AQ_ALARM);
     if (result == AQ_NO_ROOM){
         fprintf(stderr, "Thread A: Alarm message blocked as expected.\n");
+        free(message); // Free memory if it wasn't sent
     } else {
         printf("Thread A: Alarm message sent.\n");
     }
@@ -42,12 +56,16 @@ void *send_alarm(void *queue){
 
 void *send_second_alarm(void *queue){
     msleep(1000); // Allow some time for blocking to occur
+    char *message = malloc(20);
+    sprintf(message, "Second Alarm");
     printf("Thread B: Attempting to send second alarm message...\n");
-    int result = aq_send((AlarmQueue)queue, "Second Alarm", AQ_ALARM);
+    
+    int result = aq_send((AlarmQueue)queue, message, AQ_ALARM);
     if (result == 0){
         printf("Thread B: Successfully sent second alarm message.\n");
     } else {
         fprintf(stderr, "Thread B: Failed to send second alarm message.\n");
+        free(message); // Free memory if it wasn't sent
     }
     return NULL;
 }
@@ -56,13 +74,14 @@ void *receive_alarm_message(void *queue){
     void *msg;
     msleep(2000); // Simulate delay in processing
     printf("Thread C: Receiving message...\n");
+    
     int kind = aq_recv(queue, &msg);
     if (kind == AQ_ALARM){
         printf("Thread C: Received alarm message: %s\n", (char *)msg);
+        free(msg); // Free allocated memory
     } else {
         printf("Thread C: Unexpectedly received normal message: %s\n", (char *)msg);
     }
-    free(msg); // Free allocated memory
     return NULL;
 }
 
@@ -82,10 +101,11 @@ void test_blocking_alarm(AlarmQueue queue){
 // Test 2: FIFO Order of Normal Messages
 void *send_normal_messages(void *queue){
     printf("Thread X: Sending normal messages...\n");
-    aq_send(queue, (void *)"Message 1", AQ_NORMAL);
-    aq_send(queue, (void *)"Message 2", AQ_NORMAL);
-    aq_send(queue, (void *)"Message 3", AQ_NORMAL);
-    printf("Thread X: Normal messages sent.\n");
+    for (int i = 1; i <= 3; i++){
+        char *message = malloc(20);
+        sprintf(message, "Message %d", i);
+        aq_send(queue, message, AQ_NORMAL);
+    }
     return NULL;
 }
 
@@ -98,8 +118,11 @@ void *receive_normal_messages(void *queue){
         if (kind == AQ_NORMAL){
             printf("Thread Y: Received normal message: %s\n", (char *)msg);
             free(msg); // Free allocated memory
+        } else if (kind == AQ_ALARM){
+            printf("Thread Y: Unexpectedly received alarm message: %s\n", (char *)msg);
+            free(msg); // Avoid memory leaks
         } else {
-            fprintf(stderr, "Thread Y: Received unexpected alarm message: %s\n", (char *)msg);
+            printf("Thread Y: Received unknown message type.\n");
         }
     }
     return NULL;
