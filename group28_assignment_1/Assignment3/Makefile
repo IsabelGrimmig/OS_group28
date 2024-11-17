@@ -45,3 +45,11 @@ clean:
 
 clean-all: clean
 	rm -rf $(LIB_DIR) $(EXECUTABLES)
+
+
+test_aq: aq_test.c aq_tsafe.c aq.h
+    $(CC) -o test_aq aq_test.c aq_tsafe.c -lpthread
+
+demo_aq: aq_demo.c aq_seq.c aq.h
+	$(CC) -o demo_aq aq_demo.c aq_seq.c -lpthread
+	
