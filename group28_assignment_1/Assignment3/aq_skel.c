@@ -132,7 +132,7 @@ int aq_recv( AlarmQueue aq, void **msg) {
     //retrieve msg
     MsgNode *node = queue->Msg_head;
     *msg = node->msg;
-    queue->Msg_head = node->next
+    queue->Msg_head = node->next;
 
     if (!queue->Msg_head) {
       queue->Msg_tail = NULL;
