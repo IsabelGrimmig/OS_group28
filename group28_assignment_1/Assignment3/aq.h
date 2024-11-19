@@ -70,11 +70,6 @@ int aq_alarms(AlarmQueue aq);
  */
 void aq_destroy(AlarmQueue aq);
 
-/**
- * @name    aq_clean
- * @brief   Cleans up all messages in the queue and resets it.
- * @param   aq - AlarmQueue instance to clean.
- */
-void aq_clean(AlarmQueue aq);
+
 
 #endif /* LIBAQ_H_INCLUDED */

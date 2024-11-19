@@ -44,17 +44,3 @@ clean:
 
 clean-all: clean
 	rm -rf $(LIB_DIR) $(EXECUTABLES)
-
-# Bygning af sekventiel version
-demo_aq: aq_seq.o aq_demo.o aux_new.o
-	$(CC) $(CFLAGS) -o demo_aq aq_seq.o aq_demo.o aux_new.o
-
-# Bygning af tråd-sikker version
-test_aq: aq_tsafe.o aq_test.o aux_new.o
-	$(CC) $(CFLAGS) -o test_aq aq_tsafe.o aq_test.o aux_new.o
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $<
-
-clean:
-	rm -f *.o demo_aq test_aq
