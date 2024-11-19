@@ -62,13 +62,14 @@ int aq_send( AlarmQueue aq, void * msg, MsgKind kind){
 
   if (kind == AQ_ALARM) {
     // if there is an alarm message, wait until received
-    while (queue->has_alarm)
-    {
+   
+    while (queue->has_alarm){
       pthread_cond_wait(&queue->cond_no_alarm, &queue->queue_mutex);
     }
     // Set alarm msg and mark active
     queue->Msg_alarm = msg;
     queue->has_alarm = 1;
+
   } else if (kind == AQ_NORMAL) {
     // add msg to the queue
     MsgNode *new_node = (MsgNode *)malloc(sizeof(MsgNode));
@@ -76,18 +77,21 @@ int aq_send( AlarmQueue aq, void * msg, MsgKind kind){
       pthread_mutex_unlock(&queue->queue_mutex);
       return AQ_NO_ROOM;
     }
-    new_node->msg;
+    new_node->msg = msg;
     new_node->kind = AQ_NORMAL;
     new_node->next = NULL;
 
     if (queue->Msg_tail){
       queue->Msg_tail->next = new_node;
+      
     } else {
       queue->Msg_head = new_node;
     }
     queue->Msg_tail = new_node;
     queue->num_msg++;
+
   } else {
+    pthread_cond_signal(&queue->cond_not_empty);
     pthread_mutex_unlock(&queue->queue_mutex);
     return AQ_NOT_IMPL; // In case of a not implemented msg
   }
@@ -109,6 +113,11 @@ int aq_recv( AlarmQueue aq, void **msg) {
     pthread_cond_wait(&queue->cond_not_empty, &queue->queue_mutex);
   }
 
+  if (!queue->Msg_head && !queue->has_alarm){
+    pthread_mutex_unlock(&queue->queue_mutex);
+    return AQ_NO_MSG; 
+  }
+
   MsgKind kind;
   if (queue->has_alarm) {
     //Retrieve alarm
@@ -122,7 +131,9 @@ int aq_recv( AlarmQueue aq, void **msg) {
   } else {
     //retrieve msg
     MsgNode *node = queue->Msg_head;
-    *msg = node->next;
+    *msg = node->msg;
+    queue->Msg_head = node->next
+
     if (!queue->Msg_head) {
       queue->Msg_tail = NULL;
     }
@@ -162,17 +173,50 @@ int aq_alarms( AlarmQueue aq) {
 //Cleaning process
 void aq_clean(AlarmQueue aq) {
   if(!aq) return;
+
   MsgQueueStruct *queue = (MsgQueueStruct *)aq;
 
   pthread_mutex_lock(&queue->queue_mutex);
-  cleanup_queue(queue);
-  pthread_mutex_unlock(&queue->queue_mutex);
 
-  pthread_mutex_destroy(&queue->queue_mutex);
-  pthread_cond_destroy(&queue->cond_not_empty);
-  pthread_cond_destroy(&queue->cond_no_alarm);
+  void aq_clean(AlarmQueue aq){
 
-  free(queue);
+    if (!aq)
+    return;
+
+    MsgQueueStruct *queue = (MsgQueueStruct *)aq;
+
+    pthread_mutex_lock(&queue->queue_mutex);
+
+    MsgNode *current = queue->Msg_head;
+    while (current){
+      MsgNode *next = current->next; 
+      free(current->msg);            
+      free(current);                 
+      current = next;                
+    }
+
+    queue->Msg_head = NULL;
+    queue->Msg_tail = NULL;
+    queue->num_msg = 0;
+
+    // Frigør alarmbeskeden, hvis den findes
+    if (queue->has_alarm)
+    {
+      free(queue->Msg_alarm);  // Frigør alarmdata
+      queue->Msg_alarm = NULL; // Nulstil alarmpegeren
+      queue->has_alarm = 0;    // Nulstil alarmflaget
+    }
+
+    pthread_mutex_unlock(&queue->queue_mutex);
+
+    // Ødelæg mutex og condition variables
+    pthread_mutex_destroy(&queue->queue_mutex);
+    pthread_cond_destroy(&queue->cond_not_empty);
+    pthread_cond_destroy(&queue->cond_no_alarm);
+
+    // Frigør selve kø-strukturen
+    free(queue);
+  }
 }
 
 //internal func to free all msg's in queue

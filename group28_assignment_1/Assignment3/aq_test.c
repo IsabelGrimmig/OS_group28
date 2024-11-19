@@ -130,6 +130,15 @@ void *receive_normal_messages(void *queue){
 
 void test_fifo_order(AlarmQueue queue){
     printf("\nRunning Test 2: FIFO Order of Normal Messages...\n");
+    
+    aq_clean(queue);
+    queue = aq_create();
+    if (!queue)
+    {
+        fprintf(stderr, "Failed to reinitialize alarm queue.\n");
+        exit(1);
+    }
+
     pthread_t threadX, threadY;
 
     pthread_create(&threadX, NULL, send_normal_messages, queue);
