@@ -3,7 +3,7 @@ CCWARNINGS = -W -Wall -Wno-unused-parameter -Wno-unused-variable -Wno-unused-fun
 CCOPTS = -g -O0
 CFLAGS = $(CCWARNINGS) $(CCOPTS)
 
-LIB_SOURCES = aq_tsafe.c
+LIB_SOURCES = aq_tsafe.c	aq_seq.c 
 LIB_OBJECTS = $(LIB_SOURCES:.c=.o)
 LIB = aq
 LIB_DIR = mylib
