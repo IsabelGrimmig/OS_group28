@@ -171,17 +171,8 @@ int aq_alarms( AlarmQueue aq) {
 }
 
 //Cleaning process
-void aq_clean(AlarmQueue aq) {
-  if(!aq) return;
-
-  MsgQueueStruct *queue = (MsgQueueStruct *)aq;
-
-  pthread_mutex_lock(&queue->queue_mutex);
-
-  void aq_clean(AlarmQueue aq){
-
-    if (!aq)
-    return;
+void aq_clean(AlarmQueue aq){
+  if (!aq) return;
 
     MsgQueueStruct *queue = (MsgQueueStruct *)aq;
 
@@ -217,7 +208,7 @@ void aq_clean(AlarmQueue aq) {
     // Frigør selve kø-strukturen
     free(queue);
   }
-}
+
 
 //internal func to free all msg's in queue
 static void cleanup_queue(MsgQueueStruct *queue) {
