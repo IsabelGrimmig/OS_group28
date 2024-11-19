@@ -130,8 +130,8 @@ void *receive_normal_messages(void *queue){
 
 void test_fifo_order(AlarmQueue queue){
     printf("\nRunning Test 2: FIFO Order of Normal Messages...\n");
-    
-    aq_clean(queue);
+
+    //aq_clean(queue);
     queue = aq_create();
     if (!queue)
     {
