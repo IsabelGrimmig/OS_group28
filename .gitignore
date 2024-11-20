@@ -1,4 +1,5 @@
-.vscode/c_cpp_properties.json
-.vscode/settings.json
-group28_assignment_1/cmd_int
-*.json
+*.o
+*.exe
+demo
+test
+mylib/
